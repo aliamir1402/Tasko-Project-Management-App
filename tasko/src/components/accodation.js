@@ -6,6 +6,7 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  space,
 } from "@chakra-ui/react";
 import lowFlag from "../images/low-flag.png";
 import mediumFlag from "../images/medium-flag.png";
@@ -13,24 +14,146 @@ import highFlag from "../images/high-flag.png";
 import CancelIcon from "../images/cancelicon.svg";
 import DeleteIcon from "../images/delete.svg";
 import UpdateIcon from "../images/update.svg";
+import ghostPreLoader from "../images/Ghost.gif";
 
 export default function Accodation() {
-  var count = 2;
-
   const [isRowVisible, setRowVisible] = useState(true);
   const [updateisOpen, setupdateIsOpen] = useState(false);
-  const [loading, setLoading] = useState("");
+  const [loading, setLoading] = useState(true);
   const [selectedVal, setselectedVal] = useState("");
   const [UpdatePriorityVal, setUpdatePriorityVal] = useState("");
-  const [UpdateDeadlineVal, setUpdateDeadlineVal] = useState("");
-  const [UpdateSectionVal, setUpdateSectionVal] = useState("");
+  const [TaskSectionVal, setTaskSectionVal] = useState("");
   const [SectionCountValue, setSectionCountValue] = useState([]);
   const [TaskPerSection, setTaskPerSection] = useState([]);
   const [taskNumberLength, setTaskNumberLength] = useState([]);
 
+  // Fetch current date
+  const currentDate = new Date();
+
+  // Extract year, month, and day
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1; // Month starts from 0
+  const day = currentDate.getDate();
+
+  // Format month and day to have leading zeros if needed
+  const formattedMonth = month < 10 ? `0${month}` : month;
+  const formattedDay = day < 10 ? `0${day}` : day;
+
+  // Concatenate year, month, and day to form the date string in YYYY-MM-DD format
+  const dateString = `${year}-${formattedMonth}-${formattedDay}`;
+
+  // Fetch current time
+  const hours = currentDate.getHours();
+  const minutes = currentDate.getMinutes();
+  const seconds = currentDate.getSeconds();
+
+  // Format hours, minutes, and seconds to have leading zeros if needed
+  const formattedHours = hours < 10 ? `0${hours}` : hours;
+  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+  const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+
+  // Concatenate hours, minutes, and seconds to form the time string in HH:MM:SS format
+  const timeString = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+
   useEffect(() => {
     dataFetchFunc();
   }, []);
+
+  const handlePriorityVal = (event) => {
+    setUpdatePriorityVal(event.target.value);
+  };
+
+  const handleTaskSectionVal = (event) => {
+    setTaskSectionVal(event.target.value);
+  };
+
+  const UpdateData = async () => {
+    try {
+      const DataInsert = {
+        id: dateString + "-" + timeString,
+        title: document.getElementById("task-title").value,
+        description: document.getElementById("task-description").value,
+        priority: UpdatePriorityVal,
+        startDate: dateString,
+        deadline: document.getElementById("task-deadline").value,
+        section: TaskSectionVal,
+        tags: document.getElementById("task-tags").value.split(","),
+        status: "IP",
+      };
+
+      if (
+        !document.getElementById("task-title").value ||
+        !document.getElementById("task-description").value ||
+        !UpdatePriorityVal ||
+        !document.getElementById("task-deadline").value ||
+        !TaskSectionVal ||
+        document.getElementById("task-tags").value.split(",").length === 0
+      ) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/api/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(DataInsert),
+      });
+
+      const responseData = await response.json();
+      console.log("Response from server:", responseData);
+      alert("Data sent successfully!");
+      updatetogglePopup();
+    } catch (error) {
+      console.error("Error sending data:", error);
+      alert("Error sending data. Please try again.");
+    }
+  };
+
+  const DeleteData = async () => {
+    try {
+      const DataInsert = {
+        id: dateString + "-" + timeString,
+        title: document.getElementById("task-title").value,
+        description: document.getElementById("task-description").value,
+        priority: UpdatePriorityVal,
+        startDate: dateString,
+        deadline: document.getElementById("task-deadline").value,
+        section: TaskSectionVal,
+        tags: document.getElementById("task-tags").value.split(","),
+        status: "IP",
+      };
+
+      if (
+        !document.getElementById("task-title").value ||
+        !document.getElementById("task-description").value ||
+        !UpdatePriorityVal ||
+        !document.getElementById("task-deadline").value ||
+        !TaskSectionVal ||
+        document.getElementById("task-tags").value.split(",").length === 0
+      ) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/api/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(DataInsert),
+      });
+
+      const responseData = await response.json();
+      console.log("Response from server:", responseData);
+      alert("Data sent successfully!");
+      updatetogglePopup();
+    } catch (error) {
+      console.error("Error sending data:", error);
+      alert("Error sending data. Please try again.");
+    }
+  };
 
   var dataFetchFunc = () => {
     const fetchDataSection = async () => {
@@ -42,8 +165,6 @@ export default function Accodation() {
         await setSectionCountValueAsync(data2);
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
       }
     };
     const fetchTaskPerSection = async () => {
@@ -57,17 +178,13 @@ export default function Accodation() {
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
-        setLoading(false);
+        setTimeout(() => {
+          setLoading(false);
+        }, 1000);
       }
     };
     fetchDataSection();
     fetchTaskPerSection();
-    var x = [];
-    for (let i = 0; i < SectionCountValue.length; i++) {
-      x.push(TaskPerSection[i].length);
-    }
-    setTaskNumberLength(x);
-    taskrepeation();
   };
 
   const setSectionCountValueAsync = (data) => {
@@ -115,142 +232,21 @@ export default function Accodation() {
     }
   };
 
-  var taskrepeation = () => {
-    for (let j = 0; j < SectionCountValue.length; j++) {
-      var section = document.getElementById("section-" + (j + 1));
-      var num = document.getElementById("num-" + (j + 1));
-      section.innerHTML = "";
-      num.innerHTML = "<span>(" + taskNumberLength[j] + ")</span>";
-      // Task-specific divs creation
-      for (let i = 0; i < TaskPerSection[j].length; i++) {
-        // Define the two dates
-        const deadline = new Date(TaskPerSection[j][i].deadline); // Replace with your first date
-        const startdate = new Date(TaskPerSection[j][i].startDate); // Current date and time
-
-        // Find the difference in milliseconds
-        const differenceInMilliseconds =
-          (deadline - startdate) / 86400000 > 0
-            ? (deadline - startdate) / 86400000 + " Days"
-            : "Time Passed";
-
-        // Create div element with class bor, flex, and text-sm
-        var div = document.createElement("div");
-        div.className = "bor flex text-sm";
-
-        // Create div element with class inline-flex and items-center
-        var innerDiv1 = document.createElement("div");
-        innerDiv1.className = "inline-flex items-center mr-2";
-
-        // Create input element with specified attributes
-        var input = document.createElement("input");
-        input.type = "checkbox";
-        input.id = "task-row-" + (j + 1) + "-" + (i + 1);
-        input.addEventListener(
-          "change",
-          checkedboxcheck.bind(
-            null,
-            "task-row-" + (j + 1) + "-" + (i + 1),
-            "x-" + (i + 1) + (j + 1)
-          )
-        );
-        input.className = "form-checkbox h-5 w-5 text-blue-600 rounded";
-
-        // Append input to innerDiv1
-        innerDiv1.appendChild(input);
-
-        // Append innerDiv1 to div
-        div.appendChild(innerDiv1);
-
-        // Create and append other div elements similarly
-        var nameDiv = document.createElement("div");
-        nameDiv.className = "x-" + (i + 1) + (j + 1) + " p-2 width-row";
-        nameDiv.textContent = TaskPerSection[j][i].title;
-        div.appendChild(nameDiv);
-
-        // Create and append other div elements similarly
-        var desdiv = document.createElement("div");
-        desdiv.className = "x-" + (i + 1) + (j + 1) + " p-2 width-row-des";
-        desdiv.textContent = TaskPerSection[j][i].description;
-        div.appendChild(desdiv);
-
-        var startDateDiv = document.createElement("div");
-        startDateDiv.className =
-          "x-" + (i + 1) + (j + 1) + " p-2 width-row-subs";
-        startDateDiv.textContent = TaskPerSection[j][i].startDate;
-        div.appendChild(startDateDiv);
-
-        var dueDateDiv = document.createElement("div");
-        dueDateDiv.className = "x-" + (i + 1) + (j + 1) + " p-2 width-row-subs";
-        dueDateDiv.textContent = TaskPerSection[j][i].deadline;
-        div.appendChild(dueDateDiv);
-
-        var timeLeftDiv = document.createElement("div");
-        timeLeftDiv.className =
-          "x-" + (i + 1) + (j + 1) + " p-2 width-row-subs";
-        timeLeftDiv.textContent = differenceInMilliseconds;
-        div.appendChild(timeLeftDiv);
-
-        var priorityDiv = document.createElement("div");
-        priorityDiv.className =
-          "x-" + (i + 1) + (j + 1) + " p-2 width-row-subs";
-        priorityDiv.textContent = TaskPerSection[j][i].priority;
-        div.appendChild(priorityDiv);
-
-        var div1 = document.createElement("div");
-        div1.className = "p-2 pl-3 pr-3";
-
-        // Create the button for the first div
-        var button1 = document.createElement("button");
-
-        // Create the image for the first button
-        var img1 = document.createElement("img");
-        img1.src = UpdateIcon; // Assuming UpdateIcon is a variable holding the image source
-        img1.alt = "";
-
-        // Append the image to the button
-        button1.appendChild(img1);
-
-        // Append the button to the first div
-        div1.appendChild(button1);
-
-        // Create the second div
-        var div2 = document.createElement("div");
-        div2.className = "p-2 pl-3 pr-3";
-
-        // Create the button for the second div
-        var button2 = document.createElement("button");
-
-        // Create the image for the second button
-        var img2 = document.createElement("img");
-        img2.src = DeleteIcon; // Assuming DeleteIcon is a variable holding the image source
-        img2.alt = "";
-
-        // Append the image to the button
-        button2.appendChild(img2);
-
-        // Append the button to the second div
-        div2.appendChild(button2);
-
-        div.appendChild(div1);
-        div.appendChild(div2);
-
-        // Append the newly created div to section
-        section.appendChild(div);
-      }
-    }
-  };
   if (loading) {
+    const x = [".", ".", "."];
     return (
-      <p
+      <div
         style={{
-          textAlign: "center",
-          justifyItems: "center",
+          display: "flex",
+          justifyContent: "center", // Center horizontally
+          alignItems: "center", // Center vertically
+          textAlign: "center", // Center any text content
           fontFamily: "monospace",
           fontSize: "30px",
         }}
       >
-        Loading...
-      </p>
+        <img src={ghostPreLoader} alt="Loader" />
+      </div>
     );
   }
 
@@ -272,7 +268,9 @@ export default function Accodation() {
                           <span
                             id={`num-` + (index + 1)}
                             className="pl-3 text-gray-600 font-mono text-md"
-                          ></span>
+                          >
+                            ({TaskPerSection[index].length})
+                          </span>
                         </Box>
                       </div>
                       <AccordionIcon />
@@ -306,8 +304,104 @@ export default function Accodation() {
                         </div>
                       </div>
                       <hr />
-
-                      <div id={`section-` + (index + 1)}></div>
+                      {TaskPerSection[index].map((item, index_task) => (
+                        <div class="bor flex text-sm">
+                          <div class="inline-flex items-center mr-2">
+                            <input
+                              type="checkbox"
+                              id={"task-row-" + (index + 1) + (index_task + 1)}
+                              className="form-checkbox h-5 w-5 text-blue-600 rounded"
+                              onChange={checkedboxcheck.bind(
+                                null,
+                                "task-row-" + (index + 1) + (index_task + 1),
+                                "x-" + (index + 1) + (index_task + 1)
+                              )}
+                            />{" "}
+                          </div>{" "}
+                          <div
+                            class={
+                              "x-" +
+                              (index + 1) +
+                              (index_task + 1) +
+                              " width-row p-2"
+                            }
+                          >
+                            {TaskPerSection[index][index_task].title}{" "}
+                          </div>{" "}
+                          <div
+                            class={
+                              "x-" +
+                              (index + 1) +
+                              (index_task + 1) +
+                              " width-row-des p-2"
+                            }
+                          >
+                            {TaskPerSection[index][index_task].description}
+                          </div>{" "}
+                          <div
+                            class={
+                              "x-" +
+                              (index + 1) +
+                              (index_task + 1) +
+                              " width-row-subs p-2"
+                            }
+                          >
+                            {TaskPerSection[index][index_task].startDate}
+                          </div>{" "}
+                          <div
+                            class={
+                              "x-" +
+                              (index + 1) +
+                              (index_task + 1) +
+                              " width-row-subs p-2"
+                            }
+                          >
+                            {TaskPerSection[index][index_task].deadline}
+                          </div>{" "}
+                          <div
+                            class={
+                              "x-" +
+                              (index + 1) +
+                              (index_task + 1) +
+                              " width-row-subs p-2"
+                            }
+                          >
+                            {new Date(
+                              TaskPerSection[index][index_task].deadline
+                            ) -
+                              new Date() >
+                            0
+                              ? Math.floor(
+                                  (new Date(
+                                    TaskPerSection[index][index_task].deadline
+                                  ) -
+                                    new Date()) /
+                                    (1000 * 60 * 60 * 24)
+                                ) + " Days"
+                              : "Time Passed"}
+                          </div>{" "}
+                          <div
+                            class={
+                              "x-" +
+                              (index + 1) +
+                              (index_task + 1) +
+                              " width-row-subs p-2"
+                            }
+                          >
+                            {TaskPerSection[index][index_task].priority}
+                          </div>{" "}
+                          <div class="p-2 pl-3 pr-3">
+                            <button onClick={updatetogglePopup}>
+                              <img src={UpdateIcon} alt="" />
+                            </button>{" "}
+                          </div>{" "}
+                          <div class="p-2 pl-3 pr-3">
+                            <button>
+                              <img src={DeleteIcon} alt="" />
+                            </button>{" "}
+                          </div>{" "}
+                        </div>
+                      ))}
                     </div>
                   </AccordionPanel>
                 </AccordionItem>
@@ -345,7 +439,8 @@ export default function Accodation() {
                         className="add-section-2-input"
                         type="text"
                         name=""
-                        id=""
+                        id="task-title"
+                        required
                       />
                     </div>
                   </div>
@@ -359,7 +454,7 @@ export default function Accodation() {
                         className="add-section-3-input"
                         type="text"
                         name=""
-                        id=""
+                        id="task-description"
                       />
                     </div>
                   </div>
@@ -371,11 +466,13 @@ export default function Accodation() {
                         <div className="add-section-2-div">
                           <select
                             className="add-section-2-dropdown"
+                            id="task-priority"
                             value={UpdatePriorityVal}
-                            onChange={handleDropdown}
+                            onChange={handlePriorityVal}
+                            required
                           >
-                            <option value="" disabled selected>
-                              Choose an option
+                            <option value="" selected>
+                              Choose Option
                             </option>
                             <option value="Low">Low</option>
                             <option value="Medium">Medium</option>
@@ -386,7 +483,12 @@ export default function Accodation() {
                       <div>
                         <div className="add-section-3-title">Deadline</div>
                         <div className="add-section-2-div">
-                          <input type="date" value={UpdateDeadlineVal} />
+                          <input
+                            type="date"
+                            className="datebox"
+                            id="task-deadline"
+                            required
+                          />
                         </div>
                       </div>
                     </div>
@@ -394,16 +496,18 @@ export default function Accodation() {
                       <div className="add-section-3-title">Section</div>
                       <div className="add-section-2-div">
                         <select
-                          className="add-section-2-dropdown"
-                          value={UpdateSectionVal}
-                          onChange={handleDropdown}
+                          class="add-section-2-dropdown"
+                          id="task-section"
+                          value={TaskSectionVal}
+                          onChange={handleTaskSectionVal}
+                          required
                         >
-                          options=
-                          {[
-                            { value: "option1", label: "January" },
-                            { value: "option2", label: "February" },
-                            { value: "option3", label: "March" },
-                          ]}
+                          <option value="" selected>
+                            Choose Option
+                          </option>
+                          <option value="Section-1">Section-1</option>
+                          <option value="Section-2">Section-2</option>
+                          <option value="Section-3">Section-3</option>
                         </select>
                       </div>
                     </div>
@@ -417,8 +521,9 @@ export default function Accodation() {
                       <input
                         className="add-section-2-input"
                         type="text"
-                        name=""
-                        id=""
+                        id="task-tags"
+                        placeholder="Input Format e.g. tag-1, tag2, tag3"
+                        required
                       />
                     </div>
                   </div>
@@ -436,7 +541,7 @@ export default function Accodation() {
                   <div>
                     <button
                       className="add-section-1-button-save"
-                      onClick={updatetogglePopup}
+                      onClick={UpdateData}
                     >
                       Save
                     </button>

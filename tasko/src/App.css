@@ -74,7 +74,7 @@
 
 /*Navbar*/
 .nav-margin {
-  width: 18%;
+  width: 17%;
   height: fit-content;
 }
 
@@ -170,19 +170,18 @@
 
 .main {
   background-color: #ffffff;
-  z-index: 5;
   padding: 17px;
   margin-left: 10px;
   margin-right: 10px;
-  border-radius: 10px;
+  border-radius: 15px;
   height: fit-content;
-  width: fit-content;
+  width: 1px;
   box-shadow: 1px 1px 3px 0px #888888;
   z-index: 1;
 }
 
 .title-main-margin {
-  width: 120vh;
+  width: 55vw;
 }
 
 @media screen and (max-width: 820px) {
